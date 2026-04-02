@@ -1,0 +1,49 @@
+========================================
+QUICK DEPLOYMENT STEPS
+========================================
+
+GITHUB (5 Minutes):
+-------------------
+1. Go to: github.com
+2. Sign up / Login
+3. New repository: "gym-management-system"
+4. Upload files (drag & drop):
+   ✅ app.py
+   ✅ requirements.txt
+   ✅ Procfile
+   ✅ runtime.txt
+   ✅ .gitignore
+   ✅ README.md
+   ✅ templates/ folder
+   ✅ static/ folder
+5. Commit changes
+✅ DONE!
+
+URL: https://github.com/YOUR_USERNAME/gym-management-system
+
+RENDER (5 Minutes):
+-------------------
+1. Go to: render.com
+2. Sign up with GitHub
+3. New + → Web Service
+4. Connect repository
+5. Configure:
+   Name: gym-management
+   Build: pip install -r requirements.txt
+   Start: gunicorn app:app
+   Free tier ✅
+6. Create Web Service
+7. Wait 3-5 minutes
+✅ LIVE!
+
+URL: https://gym-management-XXXX.onrender.com
+
+LOGIN:
+------
+Username: Ashish Singh
+Password: Ashish@123
+
+TOTAL TIME: 10 MINUTES
+TOTAL COST: FREE
+
+Done! 🎉
