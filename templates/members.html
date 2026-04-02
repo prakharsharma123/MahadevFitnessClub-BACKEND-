@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Members | Mahadev Fitness Club</title>
+    <meta http-equiv="refresh" content="86400">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Background Video -->
+<video autoplay muted loop playsinline id="bg-video">
+    <source src="{{ url_for('static', filename='gym-bg.mp4') }}" type="video/mp4">
+</video>
+
+<!-- Background Music -->
+<audio id="bg-music" autoplay muted loop>
+    <source src="{{ url_for('static', filename='music1.mp3') }}" type="audio/mpeg">
+</audio>
+
+<!-- Modern Header -->
+<header class="modern-header">
+    <div class="header-container">
+        <div class="logo-section">
+            <span class="logo-icon">🏋️</span>
+            <h1 class="logo-text">MAHADEV <span class="highlight">FITNESS</span></h1>
+        </div>
+        <nav class="nav-links">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/members" class="nav-link active">Members</a>
+            <a href="/add" class="nav-link">Add Member</a>
+            <a href="/logout" class="nav-link logout">Logout</a>
+        </nav>
+    </div>
+</header>
+
+<div class="dashboard-container">
+    
+    <!-- Header Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h2 class="dashboard-title">Member Management</h2>
+            <p class="dashboard-subtitle">{{ members|length }} members found</p>
+        </div>
+        <div class="hero-actions">
+            <button class="btn-primary" onclick="location.href='/add'">
+                <span class="btn-icon">➕</span> Add Member
+            </button>
+            <button class="btn-secondary" onclick="location.href='/dashboard'">
+                <span class="btn-icon">📊</span> Dashboard
+            </button>
+            <button onclick="exportMembers()" id="export-btn"
+                style="padding: 12px 22px; background: linear-gradient(135deg, #16a34a, #15803d);
+                       color: white; border: none; border-radius: 12px; font-weight: 700;
+                       font-size: 0.95rem; cursor: pointer; display: inline-flex;
+                       align-items: center; gap: 8px; transition: all 0.3s ease;
+                       box-shadow: 0 4px 15px rgba(22,163,74,0.3);"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(22,163,74,0.45)'"
+                onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 15px rgba(22,163,74,0.3)'">
+                <span>📥</span> Export Excel
+            </button>
+        </div>
+    </div>
+
+    <!-- Search & Filter Section -->
+    <div style="background: var(--bg-glass); backdrop-filter: blur(20px); border-radius: 20px; padding: 1.5rem; border: 1px solid var(--border); box-shadow: var(--shadow-md); margin-bottom: 1.5rem; animation: fadeInUp 0.4s ease;">
+        
+        <form method="GET" action="/members" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: end;">
+            
+            <!-- Search Box -->
+            <div style="flex: 1; min-width: 250px;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">
+                    🔍 Search by Name or Phone
+                </label>
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Enter name or phone number..." 
+                    value="{{ search_query }}"
+                    style="margin-bottom: 0; background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 12px 16px; border-radius: 10px; transition: all 0.3s ease;"
+                    onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(255, 77, 0, 0.1)'"
+                    onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none'">
+            </div>
+
+            <!-- Status Filter -->
+            <div style="flex: 0 0 200px;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">
+                    📊 Filter by Status
+                </label>
+                <select 
+                    name="status" 
+                    style="margin-bottom: 0; background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 12px 16px; border-radius: 10px; cursor: pointer;">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Members</option>
+                    <option value="paid" {% if status_filter == 'paid' %}selected{% endif %}>✅ Paid Today</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>⚠️ Pending/Overdue</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>🔥 Active</option>
+                    <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>❌ Expired</option>
+                </select>
+            </div>
+
+            <!-- Search Button -->
+            <div style="flex: 0 0 auto;">
+                <button 
+                    type="submit" 
+                    style="width: auto; padding: 12px 24px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 0;">
+                    🔎 Search
+                </button>
+            </div>
+
+            <!-- Clear Button -->
+            {% if search_query or status_filter != 'all' %}
+            <div style="flex: 0 0 auto;">
+                <button 
+                    type="button"
+                    onclick="location.href='/members'"
+                    style="width: auto; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 0;">
+                    ✖️ Clear
+                </button>
+            </div>
+            {% endif %}
+
+        </form>
+
+        <!-- Active Filters Display -->
+        {% if search_query or status_filter != 'all' %}
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+            <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Active Filters:</span>
+            
+            {% if search_query %}
+            <span style="background: rgba(255, 77, 0, 0.2); padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; border: 1px solid var(--primary); display: inline-flex; align-items: center; gap: 6px;">
+                🔍 "{{ search_query }}"
+            </span>
+            {% endif %}
+
+            {% if status_filter != 'all' %}
+            <span style="background: rgba(59, 130, 246, 0.2); padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; border: 1px solid var(--info); display: inline-flex; align-items: center; gap: 6px;">
+                📊 {{ status_filter|title }}
+            </span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Members Table -->
+    <div style="background: var(--bg-glass); backdrop-filter: blur(20px); border-radius: 20px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-lg); animation: fadeInUp 0.6s ease;">
+        
+        <div class="table-wrapper">
+            <table class="members-table" style="border-radius: 12px; overflow: hidden;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, rgba(255, 77, 0, 0.2), rgba(255, 165, 0, 0.2));">
+                        <th style="padding: 16px 12px; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Name</th>
+                        <th style="padding: 16px 12px;">Phone</th>
+                        <th style="padding: 16px 12px;">Plan</th>
+                        <th style="padding: 16px 12px;">Fees</th>
+                        <th style="padding: 16px 12px;">Join Date</th>
+                        <th style="padding: 16px 12px;">Last Fee</th>
+                        <th style="padding: 16px 12px;">Expiry</th>
+                        <th style="padding: 16px 12px;">Status</th>
+                        <th style="padding: 16px 12px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for m in members %}
+                <tr class="{% if m.days_left == 0 and not m.payment_done %}overdue{% elif m.payment_done %}paid{% endif %}" 
+                    style="transition: all 0.3s ease;">
+                    
+                    <!-- Name -->
+                    <td style="padding: 14px 12px; font-weight: 600;">
+                        {{ m.name }}
+                    </td>
+
+                    <!-- Phone -->
+                    <td style="padding: 14px 12px; font-family: var(--font-mono); font-size: 0.9rem;">
+                        {{ m.phone }}
+                    </td>
+
+                    <!-- Plan -->
+                    <td style="padding: 14px 12px;">
+                        <span style="background: rgba(255, 77, 0, 0.15); padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; border: 1px solid var(--border);">
+                            {{ m.plan.replace('_', ' ').title() }}
+                        </span>
+                    </td>
+
+                    <!-- Fees -->
+                    <td style="padding: 14px 12px; font-weight: 700; font-family: var(--font-mono); color: var(--secondary);">
+                        ₹{{ m.fees }}
+                    </td>
+
+                    <!-- Join Date -->
+                    <td style="padding: 14px 12px; font-size: 0.9rem; color: var(--text-muted);">
+                        {{ m.joining_date }}
+                    </td>
+
+                    <!-- Last Fee Date -->
+                    <td style="padding: 14px 12px; font-size: 0.9rem; color: var(--text-muted);">
+                        {{ m.last_fee_date }}
+                    </td>
+
+                    <!-- Expiry Date -->
+                    <td style="padding: 14px 12px; font-size: 0.9rem;">
+                        {{ m.expiry_date }}
+                    </td>
+
+                    <!-- Status & Payment Actions -->
+                    <td style="padding: 14px 12px; min-width: 160px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            {% if m.payment_done and m.last_fee_date == today %}
+                                <!-- PAID TODAY STATE -->
+                                <span class="paid-label" style="background: rgba(16, 185, 129, 0.2); padding: 8px 16px; border-radius: 10px; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 2px solid #10b981; font-weight: 800; color: #10b981; box-shadow: 0 0 15px rgba(16,185,129,0.2);">
+                                    ✅ PAYMENT DONE
+                                </span>
+                                <small style="text-align: center; color: var(--text-muted); font-size: 0.7rem; margin-top: 4px;">(Resets for countdown tomorrow)</small>
+                                
+                            {% elif m.days_left > 0 %}
+                                <!-- ACTIVE STATE (COUNTDOWN) -->
+                                <span class="days-left-label" style="background: rgba(59, 130, 246, 0.15); padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px; border: 1px solid #3b82f6; font-weight: 600; color: #60a5fa;">
+                                    ⏳ {{ m.days_left }} days left
+                                </span>
+                                
+                            {% else %}
+                                <!-- EXPIRED STATE (MARK PAID BUTTON) -->
+                                <span class="overdue-label" style="background: rgba(239, 68, 68, 0.2); padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px; border: 1px solid var(--danger); font-weight: 700;">
+                                    ⚠️ Membership Expired
+                                </span>
+
+                                <div style="margin-top: 6px; padding: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+                                    <a href="/mark_paid/{{ m.id }}" 
+                                       onclick="return confirm('Mark {{ m.name }} as paid for today?')"
+                                       style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px; background: #10b981; color: white; border-radius: 8px; font-size: 0.85rem; font-weight: 800; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 10px rgba(16,185,129,0.3);">
+                                        ✅ MARK PAID
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </td>
+
+                    <!-- Actions -->
+                    <td class="action" style="padding: 14px 12px;">
+                        <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
+                            <!-- Edit -->
+                            <a href="/edit/{{ m.id }}" title="Edit Everything"
+                               style="font-size: 1.5rem; transition: all 0.2s ease;"
+                               onmouseover="this.style.transform='scale(1.2)';"
+                               onmouseout="this.style.transform='scale(1)';">
+                                ✏️
+                            </a>
+                            
+                            <!-- Send SMS -->
+                            <a href="/send_sms/{{ m.id }}" title="Send SMS Reminder"
+                               style="font-size: 1.5rem; transition: all 0.2s ease;"
+                               onclick="return confirm('Send SMS reminder to {{ m.name }}?')"
+                               onmouseover="this.style.transform='scale(1.2)';"
+                               onmouseout="this.style.transform='scale(1)';">
+                                📱
+                            </a>
+                            
+                            <!-- Delete -->
+                            <a href="/delete/{{ m.id }}" title="Delete Member"
+                               onclick="return confirm('Are you sure you want to delete {{ m.name }}? This cannot be undone.');"
+                               style="font-size: 1.5rem; transition: all 0.2s ease;"
+                               onmouseover="this.style.transform='scale(1.2)';"
+                               onmouseout="this.style.transform='scale(1)';">
+                                🗑️
+                            </a>
+                        </div>
+                    </td>
+
+                </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+        {% if members|length == 0 %}
+        <div style="text-align: center; padding: 4rem 2rem; color: var(--text-muted);">
+            <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.3;">
+                {% if search_query or status_filter != 'all' %}
+                    🔍
+                {% else %}
+                    👥
+                {% endif %}
+            </div>
+            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">
+                {% if search_query or status_filter != 'all' %}
+                    No Members Found
+                {% else %}
+                    No Members Yet
+                {% endif %}
+            </h3>
+            <p style="margin-bottom: 2rem;">
+                {% if search_query or status_filter != 'all' %}
+                    Try adjusting your search or filter criteria
+                {% else %}
+                    Get started by adding your first gym member
+                {% endif %}
+            </p>
+            {% if not search_query and status_filter == 'all' %}
+            <button class="btn-primary" onclick="location.href='/add'" style="width: auto; padding: 12px 24px;">
+                ➕ Add First Member
+            </button>
+            {% else %}
+            <button class="btn-secondary" onclick="location.href='/members'" style="width: auto; padding: 12px 24px;">
+                ✖️ Clear Filters
+            </button>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+<script>
+// Unmute music on first click
+document.addEventListener("click", function () {
+    const music = document.getElementById("bg-music");
+    if (music) {
+        music.muted = false;
+        music.volume = 0.4;
+        music.play().catch(err => console.log(err));
+    }
+}, { once: true });
+
+// Export Excel
+function exportMembers() {
+    const btn = document.getElementById('export-btn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<span>⏳</span> Exporting...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+
+    const link = document.createElement('a');
+    link.href = '/export_members';
+    link.click();
+
+    setTimeout(() => {
+        btn.innerHTML = orig;
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }, 2000);
+}
+
+document.querySelectorAll('.members-table tbody tr').forEach(row => {
+    row.addEventListener('mouseenter', function() {
+        this.style.background = 'rgba(255, 255, 255, 0.08)';
+        this.style.transform = 'scale(1.01)';
+    });
+    row.addEventListener('mouseleave', function() {
+        this.style.transform = 'scale(1)';
+        // Restore original background based on class
+        if (this.classList.contains('paid')) {
+            this.style.background = 'rgba(0,255,0,0.15)';
+        } else if (this.classList.contains('overdue')) {
+            this.style.background = 'rgba(255,0,0,0.25)';
+        } else {
+            this.style.background = '';
+        }
+    });
+});
+</script>
+
+</body>
+</html>

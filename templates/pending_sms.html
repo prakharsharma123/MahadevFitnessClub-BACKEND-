@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending SMS | Mahadev Fitness Club</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Background Video -->
+<video autoplay muted loop playsinline id="bg-video">
+    <source src="{{ url_for('static', filename='gym-bg.mp4') }}" type="video/mp4">
+</video>
+
+<!-- Modern Header -->
+<header class="modern-header">
+    <div class="header-container">
+        <div class="logo-section">
+            <span class="logo-icon">🏋️</span>
+            <h1 class="logo-text">MAHADEV <span class="highlight">FITNESS</span></h1>
+        </div>
+        <nav class="nav-links">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/members" class="nav-link">Members</a>
+            <a href="/pending_sms" class="nav-link active">Pending SMS</a>
+            <a href="/logout" class="nav-link logout">Logout</a>
+        </nav>
+    </div>
+</header>
+
+<div class="dashboard-container">
+    
+    <!-- Header Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h2 class="dashboard-title">📱 Send Manual SMS</h2>
+            <p class="dashboard-subtitle">Copy phone numbers and messages, then send SMS manually from your phone</p>
+        </div>
+    </div>
+
+    <!-- Stats Card -->
+    <div style="background: var(--bg-glass); backdrop-filter: blur(20px); border-radius: 20px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-lg); margin-bottom: 2rem; animation: fadeInUp 0.4s ease;">
+        
+        <div style="display: flex; gap: 2rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+            
+            <!-- Total Pending -->
+            <div style="text-align: center; padding: 1.5rem 2rem; background: rgba(239, 68, 68, 0.15); border-radius: 16px; border: 1px solid var(--danger); min-width: 200px;">
+                <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚠️</div>
+                <div style="font-size: 2.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--danger); margin-bottom: 0.5rem;">
+                    {{ total_pending }}
+                </div>
+                <div style="font-size: 0.95rem; color: var(--text-muted); font-weight: 600;">
+                    Members with Pending Fees
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div style="text-align: left; padding: 1.5rem 2rem; background: rgba(255, 165, 0, 0.15); border-radius: 16px; border: 1px solid var(--secondary); min-width: 300px;">
+                <div style="font-weight: 700; margin-bottom: 1rem; color: var(--secondary); font-size: 1.1rem;">📝 How to Send:</div>
+                <ol style="margin: 0; padding-left: 1.5rem; color: var(--text); line-height: 1.8;">
+                    <li>Click "Copy Phone" button</li>
+                    <li>Click "Copy Message" button</li>
+                    <li>Open WhatsApp/SMS on your phone</li>
+                    <li>Paste phone number and message</li>
+                    <li>Send!</li>
+                </ol>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Pending Members List -->
+    {% if total_pending > 0 %}
+    <div style="background: var(--bg-glass); backdrop-filter: blur(20px); border-radius: 20px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-lg); animation: fadeInUp 0.6s ease;">
+        
+        <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; font-weight: 700;">
+            📋 Pending Members - Copy & Send:
+        </h3>
+
+        {% for m in pending_members %}
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
+            
+            <!-- Member Info -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                <div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Name</div>
+                    <div style="font-weight: 700; font-size: 1.1rem;">{{ m.name }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Phone</div>
+                    <div style="font-weight: 700; font-family: var(--font-mono); font-size: 1.1rem; color: var(--primary);">{{ m.phone }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Fees</div>
+                    <div style="font-weight: 700; font-size: 1.1rem; color: var(--danger);">₹{{ m.fees }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Days Overdue</div>
+                    <div style="font-weight: 700; font-size: 1.1rem; color: var(--danger);">{{ m.days_overdue }} days</div>
+                </div>
+            </div>
+
+            <!-- Message Preview -->
+            <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; font-family: var(--font-mono); font-size: 0.9rem; white-space: pre-wrap; border: 1px solid var(--border);">{{ m.sms_message }}</div>
+
+            <!-- Copy Buttons -->
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button onclick="copyPhone('{{ m.phone }}')" style="width: auto; padding: 0.75rem 1.5rem; background: var(--primary); border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                    📱 Copy Phone
+                </button>
+                <button onclick="copyMessage('msg-{{ m.id }}')" style="width: auto; padding: 0.75rem 1.5rem; background: var(--success); border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                    📄 Copy Message
+                </button>
+                <button onclick="openWhatsApp('{{ m.phone }}', 'msg-{{ m.id }}')" style="width: auto; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #25D366, #128C7E); border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                    💬 Send via WhatsApp
+                </button>
+            </div>
+
+            <!-- Hidden textarea for copying -->
+            <textarea id="msg-{{ m.id }}" style="position: absolute; left: -9999px;">{{ m.sms_message }}</textarea>
+
+        </div>
+        {% endfor %}
+
+    </div>
+    {% else %}
+    <div style="background: var(--bg-glass); backdrop-filter: blur(20px); border-radius: 20px; padding: 3rem; border: 1px solid var(--border); box-shadow: var(--shadow-lg); text-align: center;">
+        <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.3;">✅</div>
+        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">No Pending Members!</h3>
+        <p style="color: var(--text-muted);">All members have either paid or their memberships are still active.</p>
+    </div>
+    {% endif %}
+
+    <!-- Back Button -->
+    <div style="text-align: center; margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <button onclick="location.href='/dashboard'" style="width: auto; padding: 1rem 2rem; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 10px;">
+            ← Back to Dashboard
+        </button>
+        <button onclick="openAllPhones()" style="width: auto; padding: 1rem 2rem; background: linear-gradient(135deg, #25D366, #128C7E); border: 1px solid #25D366; border-radius: 10px; font-weight: 600;">
+            💬 Open All Phone Numbers (WhatsApp Group)
+        </button>
+    </div>
+
+</div>
+
+<script>
+// Copy phone number
+function copyPhone(phone) {
+    navigator.clipboard.writeText(phone).then(() => {
+        showToast('✅ Phone copied: ' + phone);
+    });
+}
+
+// Copy message
+function copyMessage(messageId) {
+    const messageText = document.getElementById(messageId).value;
+    navigator.clipboard.writeText(messageText).then(() => {
+        showToast('✅ Message copied!');
+    });
+}
+
+// Open WhatsApp with pre-filled message for individual member
+function openWhatsApp(phone, messageId) {
+    // Clean phone number - remove spaces, +91, etc.
+    let cleanPhone = phone.replace(/\s/g, '').replace('+91', '');
+    
+    // Add +91 if not present
+    if (!cleanPhone.startsWith('91')) {
+        cleanPhone = '91' + cleanPhone;
+    }
+    
+    // Get message
+    const messageText = document.getElementById(messageId).value;
+    
+    // Encode message for URL
+    const encodedMessage = encodeURIComponent(messageText);
+    
+    // Open WhatsApp Web/App
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
+    
+    showToast('✅ Opening WhatsApp for individual member...');
+}
+
+// Open all phone numbers (for creating WhatsApp group or broadcast)
+function openAllPhones() {
+    const phones = [
+        {% for m in pending_members %}
+        '{{ m.phone }}'{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    if (phones.length === 0) {
+        showToast('⚠️ No pending members to contact!');
+        return;
+    }
+    
+    // Create formatted list
+    const phoneList = phones.map(p => p.replace(/\s/g, '')).join('\n');
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(phoneList).then(() => {
+        showToast(`✅ ${phones.length} phone numbers copied!\n\nNow:\n1. Open WhatsApp\n2. Create new group/broadcast\n3. Paste phone numbers\n4. Send promotional message!`);
+        
+        // Also show in alert for better visibility
+        alert(`📱 ${phones.length} Phone Numbers Copied!\n\nPhone numbers:\n${phoneList}\n\n✅ How to use:\n1. Open WhatsApp on your phone\n2. Create new Group or Broadcast List\n3. Paste these numbers\n4. Type your promotional message\n5. Send!\n\nOr send individually by clicking "Send via WhatsApp" button for each member.`);
+    });
+}
+
+// Toast notification
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: linear-gradient(135deg, var(--success), #14b8a6);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        max-width: 350px;
+        white-space: pre-line;
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+
+// Add CSS for animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+</body>
+</html>

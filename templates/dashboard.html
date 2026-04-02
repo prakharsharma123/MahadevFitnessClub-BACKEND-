@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Mahadev Fitness Club</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+
+<!-- Background Video -->
+<video autoplay muted loop playsinline id="bg-video">
+    <source src="{{ url_for('static', filename='gym-bg.mp4') }}" type="video/mp4">
+</video>
+
+<!-- Navigation Header -->
+<header class="modern-header">
+    <div class="header-container">
+        <div class="logo-section">
+            <span class="logo-icon">🏋️</span>
+            <h1 class="logo-text">MAHADEV <span class="highlight">FITNESS</span></h1>
+        </div>
+        <nav class="nav-links">
+            <a href="/dashboard" class="nav-link active">Dashboard</a>
+            <a href="/members" class="nav-link">Members</a>
+            <a href="/add" class="nav-link">Add Member</a>
+            <a href="/logout" class="nav-link logout">Logout</a>
+        </nav>
+    </div>
+</header>
+
+<div class="dashboard-container">
+    
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h2 class="dashboard-title">Revenue Dashboard</h2>
+            <p class="dashboard-subtitle">Real-time analytics and member statistics</p>
+        </div>
+        <div class="hero-actions">
+            <button class="btn-primary" onclick="location.href='/add'">
+                <span class="btn-icon">➕</span> Add Member
+            </button>
+            <button class="btn-secondary" onclick="location.href='/members'">
+                <span class="btn-icon">👥</span> View All
+            </button>
+            <button class="btn-secondary" onclick="location.href='/pending_sms'" style="background: linear-gradient(135deg, #ef4444, #dc2626); border: none;">
+                <span class="btn-icon">📱</span> Pending SMS
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        
+        <!-- Total Revenue Card -->
+        <div class="stat-card primary-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+                <p class="stat-label">Total Revenue Potential</p>
+                <h3 class="stat-value">₹{{ "{:,}".format(stats.total_revenue) }}</h3>
+                <p class="stat-info">{{ stats.total_members }} total members</p>
+            </div>
+        </div>
+
+        <!-- Paid Revenue Card -->
+        <div class="stat-card success-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <p class="stat-label">Collected Today</p>
+                <h3 class="stat-value">₹{{ "{:,}".format(stats.paid_revenue) }}</h3>
+                <p class="stat-info">{{ stats.paid_count }} members paid</p>
+            </div>
+        </div>
+
+        <!-- Unpaid Revenue Card -->
+        <div class="stat-card danger-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-content">
+                <p class="stat-label">Pending Collection</p>
+                <h3 class="stat-value">₹{{ "{:,}".format(stats.unpaid_revenue) }}</h3>
+                <p class="stat-info">{{ stats.unpaid_count }} members due</p>
+            </div>
+        </div>
+
+        <!-- Active Members Card -->
+        <div class="stat-card info-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-content">
+                <p class="stat-label">Active Members</p>
+                <h3 class="stat-value">{{ stats.active_members }}</h3>
+                <p class="stat-info">Memberships valid</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Revenue Breakdown Section -->
+    <div class="revenue-breakdown">
+        
+        <!-- Payment Status Chart -->
+        <div class="breakdown-card">
+            <h4 class="card-title">Payment Status</h4>
+            <div class="chart-container">
+                <div class="chart-bar">
+                    <div class="bar-segment paid-segment" 
+                         style="width: {{ (stats.paid_count / stats.total_members * 100) if stats.total_members > 0 else 0 }}%">
+                        <span class="bar-label">{{ stats.paid_count }} Paid</span>
+                    </div>
+                </div>
+                <div class="chart-bar">
+                    <div class="bar-segment unpaid-segment" 
+                         style="width: {{ (stats.unpaid_count / stats.total_members * 100) if stats.total_members > 0 else 0 }}%">
+                        <span class="bar-label">{{ stats.unpaid_count }} Unpaid</span>
+                    </div>
+                </div>
+                <div class="chart-bar">
+                    <div class="bar-segment active-segment" 
+                         style="width: {{ (stats.active_members / stats.total_members * 100) if stats.total_members > 0 else 0 }}%">
+                        <span class="bar-label">{{ stats.active_members }} Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Collection -->
+        <div class="breakdown-card highlight-card">
+            <h4 class="card-title">Today's Collection</h4>
+            <div class="today-stats">
+                <div class="today-item">
+                    <span class="today-label">Payments Received</span>
+                    <span class="today-value">{{ stats.paid_today_count }}</span>
+                </div>
+                <div class="divider"></div>
+                <div class="today-item">
+                    <span class="today-label">Amount Collected</span>
+                    <span class="today-value amount">₹{{ "{:,}".format(stats.paid_today_revenue) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Member Distribution -->
+        <div class="breakdown-card">
+            <h4 class="card-title">Member Distribution</h4>
+            <div class="distribution-grid">
+                <div class="dist-item">
+                    <div class="dist-circle total-circle">{{ stats.total_members }}</div>
+                    <p class="dist-label">Total</p>
+                </div>
+                <div class="dist-item">
+                    <div class="dist-circle active-circle">{{ stats.active_members }}</div>
+                    <p class="dist-label">Active</p>
+                </div>
+                <div class="dist-item">
+                    <div class="dist-circle expired-circle">{{ stats.expired_members }}</div>
+                    <p class="dist-label">Expired</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h4 class="section-title">Quick Actions</h4>
+        <div class="actions-grid">
+            <button class="action-btn" onclick="location.href='/add'">
+                <span class="action-icon">➕</span>
+                <span class="action-text">Add New Member</span>
+            </button>
+            <button class="action-btn" onclick="location.href='/members'">
+                <span class="action-icon">📋</span>
+                <span class="action-text">View All Members</span>
+            </button>
+            <button class="action-btn" onclick="refreshStats()">
+                <span class="action-icon">🔄</span>
+                <span class="action-text">Refresh Stats</span>
+            </button>
+            <button class="action-btn" onclick="location.href='/logout'">
+                <span class="action-icon">🚪</span>
+                <span class="action-text">Logout</span>
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Auto-refresh stats every 30 seconds
+setInterval(refreshStats, 30000);
+
+function refreshStats() {
+    location.reload();
+}
+
+// Animate stats on load
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+});
+</script>
+
+</body>
+</html>

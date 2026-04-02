@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Member | Mahadev Fitness Club</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .edit-section {
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1.2rem 1.2rem 0.75rem;
+            margin-bottom: 1.2rem;
+            background: rgba(255,255,255,0.03);
+        }
+        .edit-section h3 {
+            margin: 0 0 1rem 0;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ff4d00;
+        }
+        .field-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .field-row > div { flex: 1; min-width: 190px; }
+        .field-label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .field-label small { color: rgba(255,255,255,0.3); font-weight: 400; }
+        input, select { width: 100%; margin-bottom: 0 !important; }
+        .fees-note { font-size: 0.76rem; color: rgba(255,255,255,0.3); margin-top: 4px; }
+        .toggle-row { display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0; }
+        .toggle-switch { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .toggle-slider {
+            position: absolute; inset: 0;
+            background: rgba(255,255,255,0.15);
+            border-radius: 28px; cursor: pointer;
+            transition: 0.3s; border: 1px solid rgba(255,255,255,0.2);
+        }
+        .toggle-slider:before {
+            content: ""; position: absolute;
+            height: 20px; width: 20px; left: 3px; bottom: 3px;
+            background: white; border-radius: 50%; transition: 0.3s;
+        }
+        input:checked + .toggle-slider { background: #10b981; border-color: #10b981; }
+        input:checked + .toggle-slider:before { transform: translateX(24px); }
+        .toggle-label { color: rgba(255,255,255,0.85); font-weight: 600; font-size: 0.95rem; }
+        .proof-preview { margin-top: 0.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.4); }
+        .proof-preview a { color: #f59e0b; text-decoration: none; }
+        .proof-preview a:hover { text-decoration: underline; }
+        .save-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #ff4d00, #ff8c00);
+            color: white; border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: 700; cursor: pointer;
+            letter-spacing: 0.5px; transition: all 0.3s ease; margin-top: 0.5rem;
+        }
+        .save-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: rgba(255,255,255,0.45); text-decoration: none;
+            font-size: 0.9rem; margin-top: 1rem; transition: color 0.2s;
+        }
+        .back-link:hover { color: white; }
+    </style>
+</head>
+<body>
+
+<video autoplay muted loop id="bg-video">
+    <source src="{{ url_for('static', filename='gym-bg.mp4') }}" type="video/mp4">
+</video>
+
+<header>🏋️ Mahadev Fitness Club</header>
+
+<div class="page-center">
+    <div class="container glass" style="max-width: 600px; width: 95%;">
+
+        <h2 class="form-title">✏️ Edit Everything</h2>
+        <p class="form-subtitle">Update any detail for <strong>{{ m.name }}</strong></p>
+
+        <form method="POST" enctype="multipart/form-data">
+
+            <!-- PERSONAL INFO -->
+            <div class="edit-section">
+                <h3>👤 Personal Information</h3>
+                <div class="field-row">
+                    <div>
+                        <label class="field-label">Full Name</label>
+                        <input type="text" name="name" value="{{ m.name }}" placeholder="Full Name" required>
+                    </div>
+                    <div>
+                        <label class="field-label">Phone Number</label>
+                        <input type="text" name="phone" value="{{ m.phone }}" placeholder="Phone Number" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MEMBERSHIP PLAN -->
+            <div class="edit-section" style="border-left: 4px solid var(--primary);">
+                <h3>📋 Membership & Fees</h3>
+                <div class="field-row">
+                    <div>
+                        <label class="field-label">Select Plan</label>
+                        <select name="plan" id="plan" required onchange="updateFees()">
+                            <option value="1_month"  {% if m.plan=='1_month'  %}selected{% endif %}>1 Month  – ₹1,000</option>
+                            <option value="3_month"  {% if m.plan=='3_month'  %}selected{% endif %}>3 Months – ₹2,500</option>
+                            <option value="6_month"  {% if m.plan=='6_month'  %}selected{% endif %}>6 Months – ₹4,000</option>
+                            <option value="1_year"   {% if m.plan=='1_year'   %}selected{% endif %}>1 Year   – ₹8,000</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">Fees Amount (₹)</label>
+                        <input type="number" name="fees" id="fees" value="{{ m.fees }}" placeholder="Fees" required min="0">
+                        <p class="fees-note">Auto-updated by plan; manual change allowed.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATES -->
+            <div class="edit-section" style="border-left: 4px solid #3b82f6;">
+                <h3>📅 Registration & Fee Dates</h3>
+                <div class="field-row">
+                    <div>
+                        <label class="field-label">Joining Date</label>
+                        <input type="date" name="joining_date" value="{{ m.joining_date }}" required>
+                    </div>
+                    <div>
+                        <label class="field-label">Last Fee / Submit Date</label>
+                        <input type="date" name="last_fee_date" value="{{ m.last_fee_date }}" required>
+                        <p class="fees-note">This date determines the next expiry.</p>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <button type="submit" class="save-btn" style="box-shadow: 0 10px 20px rgba(255, 77, 0, 0.3);">
+                ✨ Save All Changes
+            </button>
+        </form>
+
+        <a href="/members" class="back-link">⬅ Back to Members</a>
+    </div>
+</div>
+
+<script>
+const PLAN_FEES = { '1_month': 1000, '3_month': 2500, '6_month': 4000, '1_year': 8000 };
+
+function updateFees() {
+    const plan = document.getElementById('plan').value;
+    if (PLAN_FEES[plan]) document.getElementById('fees').value = PLAN_FEES[plan];
+}
+
+
+</script>
+
+</body>
+</html>

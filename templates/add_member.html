@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Member | Mahadev Fitness Club</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<video autoplay muted loop id="bg-video">
+    <source src="{{ url_for('static', filename='gym-bg.mp4') }}" type="video/mp4">
+</video>
+
+<header>🏋️ Mahadev Fitness Club</header>
+
+<div class="page-center">
+    <div class="container glass">
+        <h2 class="form-title">Add Gym Member</h2>
+        <p class="form-subtitle">
+            Enter member details to track fees & reminders
+        </p>
+
+        <form method="POST">
+            <input type="text" name="name" placeholder="Member Full Name" required>
+            <input type="text" name="phone" placeholder="Phone Number" required>
+            
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Select Membership Plan</label>
+            <select name="plan" id="plan" required onchange="updateFees()" style="margin-bottom: 0;">
+                <option value="">-- Select Plan --</option>
+                <option value="1_month">1 Month - ₹1,000</option>
+                <option value="3_month">3 Months - ₹2,500</option>
+                <option value="6_month">6 Months - ₹4,000</option>
+                <option value="1_year">1 Year - ₹8,000</option>
+            </select>
+
+            <label style="display: block; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Membership Fees</label>
+            <input type="number" name="fees" id="fees" placeholder="Fees (Auto-filled)" required readonly style="background: rgba(0,0,0,0.3);">
+
+            <label style="display: block; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Joining Date</label>
+            <input type="date" name="joining_date" required>
+
+            <label style="display: block; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Last Fee Date (Cycle Start)</label>
+            <input type="date" name="last_fee_date" required>
+
+            <button type="submit" style="margin-top: 1rem;">Add Member</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function updateFees() {
+    const plan = document.getElementById('plan').value;
+    const feesInput = document.getElementById('fees');
+    
+    const fees = {
+        '1_month': 1000,
+        '3_month': 2500,
+        '6_month': 4000,
+        '1_year': 8000
+    };
+    
+    if (plan && fees[plan]) {
+        feesInput.value = fees[plan];
+    } else {
+        feesInput.value = '';
+    }
+}
+</script>
+
+</body>
+</html>
